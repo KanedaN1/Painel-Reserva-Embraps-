@@ -629,6 +629,12 @@ function renderReservaTable() {
       ? reg.duracaoSegundos
       : Math.max(0, Math.floor((nowMs - reg.chegadaTs) / 1000));
     const tempoFormatado = formatDurationHMS(segundos);
+    const tempoClass =
+      segundos >= 3600
+        ? "cell-tempo-overtime"
+        : isConcluido
+          ? "cell-tempo-done"
+          : "cell-tempo-active";
 
     tr.innerHTML = `
       <td class="col-data">${reg.dataDisplay || formatDataCurta(reg.dataIso)}</td>
@@ -647,7 +653,7 @@ function renderReservaTable() {
       <td class="col-obs">
         <input type="text" class="inline-edit-input" data-field="observacao" value="${escapeAttr(reg.observacao || "")}" placeholder="Observação..." />
       </td>
-      <td class="col-tempo ${isConcluido ? "cell-tempo-done" : "cell-tempo-active"}" data-live-timer="${isConcluido ? "" : reg.chegadaTs}">
+      <td class="col-tempo ${tempoClass}" data-live-timer="${isConcluido ? "" : reg.chegadaTs}">
         ${tempoFormatado}
       </td>
       <td class="col-acoes">
@@ -1255,6 +1261,10 @@ function startLiveTicker() {
       if (ts > 0) {
         const sec = Math.max(0, Math.floor((nowMs - ts) / 1000));
         cell.textContent = formatDurationHMS(sec);
+        if (sec >= 3600 && !cell.classList.contains("cell-tempo-overtime")) {
+          cell.classList.remove("cell-tempo-active", "cell-tempo-done");
+          cell.classList.add("cell-tempo-overtime");
+        }
       }
     });
 
