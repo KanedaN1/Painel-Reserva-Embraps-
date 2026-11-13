@@ -136,7 +136,6 @@ async function syncGoogleSheets(showNotification = false) {
   if (label) label.textContent = "Sincronizando...";
 
   const urlsToTry = [
-    `/api/colaboradores?sheetId=${GOOGLE_SHEET_ID}&t=${Date.now()}`,
     `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&t=${Date.now()}`,
     `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv`
   ];
