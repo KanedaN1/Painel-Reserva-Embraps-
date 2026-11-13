@@ -843,7 +843,7 @@ input[readonly] {
   background-color: #FFFFFF !important;
 }
 
-/* COLUNA TEMPO (ESTILO PLANILHA ORIGINAL EM VERDE, AZUL ATIVO OU VERMELHO > 1 HORA) */
+/* COLUNA TEMPO (VERDE, AZUL ATIVO, AMARELO >= 30 MIN, VERMELHO >= 60 MIN) */
 .cell-tempo-done {
   background-color: var(--green-tempo-bg) !important;
   color: #FFFFFF !important;
@@ -854,6 +854,13 @@ input[readonly] {
 .cell-tempo-active {
   background-color: var(--blue-subtle) !important;
   color: var(--blue-primary) !important;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.cell-tempo-warning {
+  background-color: #FACC15 !important;
+  color: #1E293B !important;
   font-weight: 700;
   letter-spacing: 0.03em;
 }

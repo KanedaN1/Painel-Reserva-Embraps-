@@ -632,9 +632,11 @@ function renderReservaTable() {
     const tempoClass =
       segundos >= 3600
         ? "cell-tempo-overtime"
-        : isConcluido
-          ? "cell-tempo-done"
-          : "cell-tempo-active";
+        : segundos >= 1800
+          ? "cell-tempo-warning"
+          : isConcluido
+            ? "cell-tempo-done"
+            : "cell-tempo-active";
 
     tr.innerHTML = `
       <td class="col-data">${reg.dataDisplay || formatDataCurta(reg.dataIso)}</td>
@@ -1261,9 +1263,16 @@ function startLiveTicker() {
       if (ts > 0) {
         const sec = Math.max(0, Math.floor((nowMs - ts) / 1000));
         cell.textContent = formatDurationHMS(sec);
-        if (sec >= 3600 && !cell.classList.contains("cell-tempo-overtime")) {
-          cell.classList.remove("cell-tempo-active", "cell-tempo-done");
-          cell.classList.add("cell-tempo-overtime");
+        if (sec >= 3600) {
+          if (!cell.classList.contains("cell-tempo-overtime")) {
+            cell.classList.remove("cell-tempo-active", "cell-tempo-warning", "cell-tempo-done");
+            cell.classList.add("cell-tempo-overtime");
+          }
+        } else if (sec >= 1800) {
+          if (!cell.classList.contains("cell-tempo-warning")) {
+            cell.classList.remove("cell-tempo-active", "cell-tempo-overtime", "cell-tempo-done");
+            cell.classList.add("cell-tempo-warning");
+          }
         }
       }
     });
