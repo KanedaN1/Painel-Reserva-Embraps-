@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMBRAPS | Controle de Reserva Operacional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- TOP HEADER COM LOGO DA EMPRESA -->
+  <header class="top-header">
+    <div class="header-brand">
+      <div class="logo-container">
+        <img src="./logo.png" alt="EMBRAPS" class="company-logo" />
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-titles">
+        <h1>Controle de Reserva Operacional</h1>
+        <span class="subtitle">Gestão de Entrada, Permanência e Alocação de Efetivo</span>
+      </div>
+    </div>
+
+    <div class="header-status-bar">
+      <!-- Status da Planilha Google Sheets -->
+      <div class="status-pill" id="sheetsStatusPill" title="Base de colaboradores conectada ao Google Sheets em tempo real">
+        <span class="status-dot" id="sheetsStatusDot"></span>
+        <div class="status-text">
+          <span class="status-label">Base Google Sheets</span>
+          <strong id="sheetsCountLabel">Sincronizando...</strong>
+        </div>
+        <button type="button" class="btn-icon-refresh" id="btnRefreshSheets" title="Atualizar lista de colaboradores da planilha Google Sheets">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2v6h-6"></path>
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+            <path d="M3 22v-6h6"></path>
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Status do Banco de Dados (Firebase / Local) -->
+      <button type="button" class="status-pill status-pill-clickable" id="btnOpenFirebaseModal" title="Status do banco de dados Firebase">
+        <span class="status-dot" id="dbStatusDot"></span>
+        <div class="status-text">
+          <span class="status-label">Banco de Dados</span>
+          <strong id="dbStatusLabel">Verificando...</strong>
+        </div>
+      </button>
+
+      <!-- Relógio Operacional -->
+      <div class="live-clock">
+        <span class="clock-date" id="liveDate">--/--/----</span>
+        <strong class="clock-time" id="liveTime">--:--:--</strong>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- ABA LATERAL (SIDEBAR) -->
+    <aside class="sidebar">
+      <div class="sidebar-section-label">MÓDULOS DO SISTEMA</div>
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-item active" data-tab="operacao" id="navOperacao">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Controle da Reserva</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="indicadores" id="navIndicadores">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Indicadores (SGPQ)</span>
+          <span class="lock-badge" id="indicadoresLockBadge" title="Acesso restrito SGPQ">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="colaboradores" id="navColaboradores">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Base de Colaboradores</span>
+        </button>
+      </nav>
+
+      <!-- RESUMO OPERACIONAL DO DIA NA BARRA LATERAL -->
+      <div class="sidebar-summary">
+        <div class="sidebar-section-label">RESUMO DE HOJE</div>
+        <div class="summary-card summary-active">
+          <span class="summary-title">Presentes na Reserva</span>
+          <strong class="summary-value" id="sideCountPresentes">0</strong>
+          <span class="summary-caption">Aguardando saída / alocação</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Saídas Registradas Hoje</span>
+          <strong class="summary-value" id="sideCountSaidas">0</strong>
+          <span class="summary-caption">Fluxo concluído no dia</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">Total de Passagens Hoje</span>
+          <strong class="summary-value" id="sideCountTotalHoje">0</strong>
+          <span class="summary-caption">Tempo médio hoje: <strong id="sideTempoMedioHoje">00:00:00</strong></span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sheet-link-box">
+          <span>Planilha Base Vinculada:</span>
+          <a href="https://docs.google.com/spreadsheets/d/19z_Zx40ibDudBRrQwBJ2o2hWTyTQXPpMwCTuxsLPCrA/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+            Abrir Google Sheets ↗
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+
+      <!-- ================================================================== -->
+      <!-- ABA 1: CONTROLE DA RESERVA (OPERAÇÃO DIÁRIA)                       -->
+      <!-- ================================================================== -->
+      <section class="tab-panel active" id="panelOperacao">
+        <!-- PAINÉIS DE REGISTRO RÁPIDO (ENTRADA E SAÍDA) -->
+        <div class="operation-grid">
+          <!-- REGISTRO DE ENTRADA -->
+          <div class="op-card op-card-entry">
+            <div class="op-card-header">
+              <div class="op-card-title">
+                <span class="op-badge op-badge-entry">ENTRADA</span>
+                <h2>Registrar Chegada na Reserva</h2>
+              </div>
+              <span class="op-hint">Digite o RE e pressione Enter</span>
+            </div>
+
+            <form id="formEntrada" autocomplete="off">
+              <div class="entry-main-row">
+                <div class="field-group field-re">
+                  <label for="inputReEntrada">RE - ENTRADA <span class="req">*</span></label>
+                  <input
+                    type="text"
+                    id="inputReEntrada"
+                    placeholder="Ex: 12301"
+                    inputmode="numeric"
+                    required
+                  />
+                </div>
+
+                <div class="field-group field-nome">
+                  <label for="inputNomeEntrada">NOME DO COLABORADOR</label>
+                  <input
+                    type="text"
+                    id="inputNomeEntrada"
+                    placeholder="Preenchido automaticamente pelo RE"
+                    readonly
+                  />
+                </div>
+
+                <div class="field-group field-funcao">
+                  <label for="inputFuncaoEntrada">FUNÇÃO / CARGO</label>
+                  <input
+                    type="text"
+                    id="inputFuncaoEntrada"
+                    placeholder="Preenchido automaticamente"
+                    readonly
+                  />
+                </div>
+              </div>
+
+              <div class="entry-lookup-feedback" id="entryLookupFeedback">
+                Digite a matrícula (RE) para buscar automaticamente na base Google Sheets.
+              </div>
+
+              <div class="entry-optional-row">
+                <div class="field-group">
+                  <label for="inputSupervisorEntrada">SUPERVISOR <span class="opt">(editável na tabela)</span></label>
+                  <input type="text" id="inputSupervisorEntrada" placeholder="Nome do Supervisor" />
+                </div>
+
+                <div class="field-group">
+                  <label for="inputPostoEntrada">POSTO <span class="opt">(editável na tabela)</span></label>
+                  <input type="text" id="inputPostoEntrada" placeholder="Posto de destino / alocação" />
+                </div>
+
+                <div class="field-group">
+                  <label for="inputObsEntrada">OBSERVAÇÃO <span class="opt">(opcional)</span></label>
+                  <input type="text" id="inputObsEntrada" placeholder="Observações operacionais" />
+                </div>
+
+                <div class="field-group field-submit">
+                  <button type="submit" class="btn-primary" id="btnSubmitEntrada">
+                    Registrar Entrada
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- REGISTRO DE SAÍDA RÁPIDA POR RE -->
+          <div class="op-card op-card-exit">
+            <div class="op-card-header">
+              <div class="op-card-title">
+                <span class="op-badge op-badge-exit">SAÍDA</span>
+                <h2>Baixa Rápida (RE - SAÍDA)</h2>
+              </div>
+              <span class="op-hint">Calcula saída e tempo</span>
+            </div>
+
+            <form id="formSaidaRapida" autocomplete="off">
+              <div class="field-group">
+                <label for="inputReSaidaRapida">DIGITE O RE - SAÍDA</label>
+                <div class="exit-input-group">
+                  <input
+                    type="text"
+                    id="inputReSaidaRapida"
+                    placeholder="Matrícula (RE) de quem está saindo..."
+                    inputmode="numeric"
+                    required
+                  />
+                  <button type="submit" class="btn-exit-confirm">
+                    Registrar Saída
+                  </button>
+                </div>
+              </div>
+
+              <div class="exit-preview-box" id="exitPreviewBox">
+                <span class="exit-preview-placeholder">
+                  Você pode dar baixa digitando o <strong>RE - SAÍDA</strong> aqui ou diretamente na coluna <strong>RE - SAÍDA</strong> da tabela abaixo.
+                </span>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- BARRA DE FILTROS E FERRAMENTAS DA TABELA -->
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <div class="filter-item">
+              <label for="filterDate">Data:</label>
+              <input type="date" id="filterDate" />
+              <button type="button" class="btn-link" id="btnShowToday">Hoje</button>
+              <button type="button" class="btn-link" id="btnShowAllDates">Todas as Datas</button>
+            </div>
+
+            <div class="filter-item">
+              <label for="filterStatus">Status:</label>
+              <select id="filterStatus">
+                <option value="todos">Todos os registros</option>
+                <option value="abertos">Na Reserva (Sem saída)</option>
+                <option value="concluidos">Saída Registrada</option>
+              </select>
+            </div>
+
+            <div class="filter-item filter-search">
+              <input
+                type="search"
+                id="filterSearchText"
+                placeholder="Filtrar por RE, Nome, Função, Supervisor ou Posto..."
+              />
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <span class="records-counter" id="tableRecordsCounter">0 registros exibidos</span>
+            <button type="button" class="btn-secondary" id="btnExportCsv" title="Exportar tabela atual para Excel (CSV)">
+              Exportar Excel (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- TABELA DE CONTROLE DE RESERVA (FIEL À PLANILHA) -->
+        <div class="table-wrapper">
+          <table class="reserva-table" id="reservaTable">
+            <thead>
+              <tr>
+                <th class="col-data">DATA</th>
+                <th class="col-re-ent">RE - ENTRADA</th>
+                <th class="col-nome">NOME</th>
+                <th class="col-funcao">FUNÇÃO</th>
+                <th class="col-chegada">CHEGADA</th>
+                <th class="col-saida">SAÍDA</th>
+                <th class="col-re-sai">RE - SAÍDA</th>
+                <th class="col-sup">SUPERVISOR</th>
+                <th class="col-posto">POSTO</th>
+                <th class="col-obs">OBSERVAÇÃO</th>
+                <th class="col-tempo">TEMPO</th>
+                <th class="col-acoes"></th>
+              </tr>
+            </thead>
+            <tbody id="reservaTableBody">
+              <!-- Preenchido dinamicamente pelo app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- ABA 2: INDICADORES OPERACIONAIS (ACESSO RESTRITO SGPQ)             -->
+      <!-- ================================================================== -->
+      <section class="tab-panel" id="panelIndicadores">
+        <!-- TELA DE BLOQUEIO (LOGIN SGPQ) -->
+        <div class="auth-gate-container" id="authGateContainer">
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="auth-icon-circle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <h2>Acesso Restrito — Indicadores SGPQ</h2>
+              <p>Informe as credenciais da área de gestão para visualizar as métricas de tempo de permanência, volume diário e distribuição por função.</p>
+            </div>
+
+            <form id="formLoginSgpq" autocomplete="off">
+              <div class="field-group">
+                <label for="loginUsername">Usuário</label>
+                <input type="text" id="loginUsername" placeholder="Digite o usuário" required />
+              </div>
+
+              <div class="field-group">
+                <label for="loginPassword">Senha</label>
+                <input type="password" id="loginPassword" placeholder="Digite a senha" required />
+              </div>
+
+              <div class="auth-error-msg" id="loginErrorMsg" hidden>
+                Usuário ou senha inválidos. Verifique suas credenciais SGPQ.
+              </div>
+
+              <button type="submit" class="btn-primary btn-full">
+                Acessar Painel de Indicadores
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO DOS INDICADORES (VISÍVEL APÓS LOGIN SGPQ) -->
+        <div class="indicadores-content" id="indicadoresContent" hidden>
+          <div class="indicadores-topbar">
+            <div>
+              <h2>Indicadores Operacionais da Reserva (SGPQ)</h2>
+              <p class="indicadores-subtitle">Análise de tempo médio de permanência, volume diário de colaboradores e distribuição por cargo/função.</p>
+            </div>
+
+            <div class="indicadores-actions">
+              <div class="filter-item">
+                <label for="indPeriodSelect">Período:</label>
+                <select id="indPeriodSelect">
+                  <option value="7">Últimos 7 dias</option>
+                  <option value="30" selected>Últimos 30 dias</option>
+                  <option value="hoje">Somente Hoje</option>
+                  <option value="todos">Todo o Histórico</option>
+                  <option value="custom">Personalizado</option>
+                </select>
+              </div>
+
+              <div class="filter-item" id="indCustomDatesBox" hidden>
+                <input type="date" id="indDateStart" />
+                <span>até</span>
+                <input type="date" id="indDateEnd" />
+              </div>
+
+              <div class="filter-item">
+                <label for="indCargoFilter">Cargo:</label>
+                <select id="indCargoFilter">
+                  <option value="todos">Todos os Cargos</option>
+                </select>
+              </div>
+
+              <button type="button" class="btn-secondary" id="btnExportIndicadoresCsv">
+                Exportar Relatório
+              </button>
+
+              <button type="button" class="btn-outline-danger" id="btnLogoutSgpq" title="Bloquear aba de indicadores">
+                Bloquear Aba (Sair)
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 CARDS DE INDICADORES PRINCIPAIS -->
+          <div class="kpi-grid">
+            <div class="kpi-card kpi-card-highlight">
+              <span class="kpi-label">TEMPO MÉDIO NA RESERVA</span>
+              <strong class="kpi-value" id="kpiTempoMedio">00:00:00</strong>
+              <span class="kpi-sub" id="kpiTempoMedioHoras">Média de 0,0h por colaborador</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">COLABORADORES NO PERÍODO</span>
+              <strong class="kpi-value" id="kpiTotalPassagens">0</strong>
+              <span class="kpi-sub" id="kpiMediaPorDia">Média de 0 colaboradores / dia</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">SAÍDAS CONCLUÍDAS vs NA RESERVA</span>
+              <strong class="kpi-value" id="kpiConcluidosVsAbertos">0 / 0</strong>
+              <span class="kpi-sub" id="kpiTaxaConclusao">Taxa de alocação/baixa: 0%</span>
+            </div>
+
+            <div class="kpi-card">
+              <span class="kpi-label">CARGO DE MAIOR DEMANDA</span>
+              <strong class="kpi-value kpi-value-cargo" id="kpiTopCargo">—</strong>
+              <span class="kpi-sub" id="kpiTopCargoCount">0 registros no período</span>
+            </div>
+          </div>
+
+          <!-- GRÁFICOS E TABELAS DE INDICADORES -->
+          <div class="analytics-grid">
+            <!-- COLABORADORES POR DIA NA RESERVA -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <h3>Quantidade de Colaboradores por Dia na Reserva</h3>
+                  <span>Volume diário de acionamentos e tempo médio de permanência por data</span>
+                </div>
+              </div>
+              <div class="daily-chart-container" id="dailyChartContainer">
+                <!-- Barras diárias geradas via JS -->
+              </div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th class="num">Qtd. Colaboradores</th>
+                      <th class="num">Saídas Concluídas</th>
+                      <th class="num">Em Aberto</th>
+                      <th class="num">Tempo Médio no Dia</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dailyTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- INDICADORES DIFERENCIADOS POR CARGO / FUNÇÃO -->
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <h3>Indicadores Diferenciados por Cargo / Função</h3>
+                  <span>Quantidade de colaboradores, representatividade (%) e tempo médio por função</span>
+                </div>
+              </div>
+              <div class="cargo-bars-container" id="cargoBarsContainer">
+                <!-- Barras horizontais por cargo -->
+              </div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Função / Cargo</th>
+                      <th class="num">Qtd.</th>
+                      <th class="num">% Total</th>
+                      <th class="num">Tempo Médio</th>
+                      <th class="num">Tempo Máx.</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cargoTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- DISTRIBUIÇÃO POR SUPERVISOR E POSTO -->
+          <div class="analytics-grid analytics-grid-secondary">
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <h3>Atendimentos por Supervisor</h3>
+                  <span>Volume de colaboradores alocados e tempo médio por supervisor responsável</span>
+                </div>
+              </div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Supervisor</th>
+                      <th class="num">Colaboradores</th>
+                      <th class="num">%</th>
+                      <th class="num">Tempo Médio</th>
+                    </tr>
+                  </thead>
+                  <tbody id="supervisorTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <h3>Atendimentos por Posto</h3>
+                  <span>Postos que mais receberam colaboradores da reserva operacional</span>
+                </div>
+              </div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Posto de Destino</th>
+                      <th class="num">Colaboradores</th>
+                      <th class="num">%</th>
+                      <th class="num">Tempo Médio</th>
+                    </tr>
+                  </thead>
+                  <tbody id="postoTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- ABA 3: CONSULTA DA BASE DE COLABORADORES (GOOGLE SHEETS)           -->
+      <!-- ================================================================== -->
+      <section class="tab-panel" id="panelColaboradores">
+        <div class="colaboradores-header">
+          <div>
+            <h2>Base de Colaboradores Sincronizada (Google Sheets)</h2>
+            <p class="indicadores-subtitle">
+              Consulta rápida de RE, Nome e Função diretamente da planilha de admissões da EMBRAPS. Clique em <strong>"Lançar Entrada"</strong> em qualquer colaborador para preenchê-lo na Reserva.
+            </p>
+          </div>
+          <div class="colaboradores-controls">
+            <input
+              type="search"
+              id="searchBaseColaboradores"
+              placeholder="Pesquisar por RE, Nome ou Função na planilha..."
+            />
+            <button type="button" class="btn-secondary" id="btnReloadSheetsTab">
+              Sincronizar Agora
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="reserva-table">
+            <thead>
+              <tr>
+                <th style="width: 140px;">RE (MATRÍCULA)</th>
+                <th>NOME DO COLABORADOR</th>
+                <th>FUNÇÃO / CARGO</th>
+                <th style="width: 170px; text-align: right;">AÇÃO RÁPIDA</th>
+              </tr>
+            </thead>
+            <tbody id="baseColaboradoresTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL DE CONFIGURAÇÃO DO FIREBASE -->
+  <div class="modal-backdrop" id="firebaseModalBackdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Conexão com Banco de Dados Segura (Firebase Cloud Firestore)</h3>
+        <button type="button" class="modal-close" id="btnCloseFirebaseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          O sistema salva todos os registros em tempo real no <strong>Firebase Firestore</strong> quando configurado, mantendo um espelho local de segurança no navegador.
+        </p>
+
+        <div class="firebase-status-banner" id="firebaseModalStatusBanner">
+          Verificando conexão...
+        </div>
+
+        <form id="formFirebaseConfig">
+          <div class="firebase-form-grid">
+            <div class="field-group">
+              <label for="fbApiKey">apiKey</label>
+              <input type="text" id="fbApiKey" placeholder="AIzaSy..." />
+            </div>
+            <div class="field-group">
+              <label for="fbAuthDomain">authDomain</label>
+              <input type="text" id="fbAuthDomain" placeholder="seu-projeto.firebaseapp.com" />
+            </div>
+            <div class="field-group">
+              <label for="fbProjectId">projectId</label>
+              <input type="text" id="fbProjectId" placeholder="seu-projeto" required />
+            </div>
+            <div class="field-group">
+              <label for="fbStorageBucket">storageBucket</label>
+              <input type="text" id="fbStorageBucket" placeholder="seu-projeto.firebasestorage.app" />
+            </div>
+            <div class="field-group">
+              <label for="fbMessagingSenderId">messagingSenderId</label>
+              <input type="text" id="fbMessagingSenderId" placeholder="1234567890" />
+            </div>
+            <div class="field-group">
+              <label for="fbAppId">appId</label>
+              <input type="text" id="fbAppId" placeholder="1:1234567890:web:abcdef" />
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="btnSyncLocalToFirebase" title="Envia registros salvos localmente para o Firebase">
+              Sincronizar Registros Locais p/ Firebase
+            </button>
+            <div class="modal-actions-right">
+              <button type="button" class="btn-outline-danger" id="btnClearFirebaseConfig">
+                Desconectar
+              </button>
+              <button type="submit" class="btn-primary">
+                Salvar e Conectar Firebase
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICAÇÃO OPERACIONAL -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
+
