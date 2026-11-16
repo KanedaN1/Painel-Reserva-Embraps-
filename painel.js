@@ -1584,40 +1584,42 @@ function setupEventListeners() {
 
   // Entrada de Colaborador
   const inputReEntrada = document.getElementById("inputReEntrada");
-  inputReEntrada.addEventListener("input", handleReEntradaTyping);
-  document.getElementById("formEntrada").addEventListener("submit", handleRegistrarEntrada);
+  inputReEntrada?.addEventListener("input", handleReEntradaTyping);
+  document.getElementById("formEntrada")?.addEventListener("submit", handleRegistrarEntrada);
 
   // Saída Rápida por RE
   const inputReSaida = document.getElementById("inputReSaidaRapida");
-  inputReSaida.addEventListener("input", handleReSaidaRapidaTyping);
-  document.getElementById("formSaidaRapida").addEventListener("submit", handleFormSaidaRapida);
+  inputReSaida?.addEventListener("input", handleReSaidaRapidaTyping);
+  document.getElementById("formSaidaRapida")?.addEventListener("submit", handleFormSaidaRapida);
 
   // Filtros da Tabela Operacional
   const filterDate = document.getElementById("filterDate");
-  filterDate.value = getTodayIso();
-  filterDate.addEventListener("change", renderReservaTable);
-
-  document.getElementById("btnShowToday").addEventListener("click", () => {
+  if (filterDate) {
     filterDate.value = getTodayIso();
+    filterDate.addEventListener("change", renderReservaTable);
+  }
+
+  document.getElementById("btnShowToday")?.addEventListener("click", () => {
+    if (filterDate) filterDate.value = getTodayIso();
     renderReservaTable();
   });
 
-  document.getElementById("btnShowAllDates").addEventListener("click", () => {
-    filterDate.value = "";
+  document.getElementById("btnShowAllDates")?.addEventListener("click", () => {
+    if (filterDate) filterDate.value = "";
     renderReservaTable();
   });
 
-  document.getElementById("filterStatus").addEventListener("change", renderReservaTable);
-  document.getElementById("filterSearchText").addEventListener("input", renderReservaTable);
-  document.getElementById("btnExportCsv").addEventListener("click", handleExportTableCsv);
+  document.getElementById("filterStatus")?.addEventListener("change", renderReservaTable);
+  document.getElementById("filterSearchText")?.addEventListener("input", renderReservaTable);
+  document.getElementById("btnExportCsv")?.addEventListener("click", handleExportTableCsv);
 
   // Botões de Atualizar Google Sheets
-  document.getElementById("btnRefreshSheets").addEventListener("click", () => syncGoogleSheets(true));
-  document.getElementById("btnReloadSheetsTab").addEventListener("click", () => syncGoogleSheets(true));
-  document.getElementById("searchBaseColaboradores").addEventListener("input", renderBaseColaboradoresTable);
+  document.getElementById("btnRefreshSheets")?.addEventListener("click", () => syncGoogleSheets(true));
+  document.getElementById("btnReloadSheetsTab")?.addEventListener("click", () => syncGoogleSheets(true));
+  document.getElementById("searchBaseColaboradores")?.addEventListener("input", renderBaseColaboradoresTable);
 
   // Login SGPQ (usuário: SGPQ / senha: SGPQ123)
-  document.getElementById("formLoginSgpq").addEventListener("submit", (e) => {
+  document.getElementById("formLoginSgpq")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const user = document.getElementById("loginUsername").value.trim();
     const pass = document.getElementById("loginPassword").value.trim();
@@ -1635,7 +1637,7 @@ function setupEventListeners() {
     }
   });
 
-  document.getElementById("btnLogoutSgpq").addEventListener("click", () => {
+  document.getElementById("btnLogoutSgpq")?.addEventListener("click", () => {
     isSgpqAuthenticated = false;
     sessionStorage.removeItem(STORAGE_KEYS.SGPQ_AUTH);
     updateSgpqAuthView();
@@ -1645,21 +1647,21 @@ function setupEventListeners() {
   // Filtros de Indicadores
   const indPeriodSelect = document.getElementById("indPeriodSelect");
   const indCustomDatesBox = document.getElementById("indCustomDatesBox");
-  indPeriodSelect.addEventListener("change", () => {
-    indCustomDatesBox.hidden = indPeriodSelect.value !== "custom";
+  indPeriodSelect?.addEventListener("change", () => {
+    if (indCustomDatesBox) indCustomDatesBox.hidden = indPeriodSelect.value !== "custom";
     renderIndicadores();
   });
-  document.getElementById("indDateStart").addEventListener("change", renderIndicadores);
-  document.getElementById("indDateEnd").addEventListener("change", renderIndicadores);
-  document.getElementById("indCargoFilter").addEventListener("change", renderIndicadores);
+  document.getElementById("indDateStart")?.addEventListener("change", renderIndicadores);
+  document.getElementById("indDateEnd")?.addEventListener("change", renderIndicadores);
+  document.getElementById("indCargoFilter")?.addEventListener("change", renderIndicadores);
   document.getElementById("indTransporteMonthSelect")?.addEventListener("change", () => {
     renderTransporteMensalIndicator(Date.now());
   });
-  document.getElementById("btnExportIndicadoresCsv").addEventListener("click", handleExportIndicadoresCsv);
+  document.getElementById("btnExportIndicadoresCsv")?.addEventListener("click", handleExportIndicadoresCsv);
 
   // Modal Firebase
   const modal = document.getElementById("firebaseModalBackdrop");
-  document.getElementById("btnOpenFirebaseModal").addEventListener("click", () => {
+  document.getElementById("btnOpenFirebaseModal")?.addEventListener("click", () => {
     const cfg = getActiveFirebaseConfig() || {};
     document.getElementById("fbApiKey").value = cfg.apiKey || "";
     document.getElementById("fbAuthDomain").value = cfg.authDomain || "";
@@ -1667,14 +1669,14 @@ function setupEventListeners() {
     document.getElementById("fbStorageBucket").value = cfg.storageBucket || "";
     document.getElementById("fbMessagingSenderId").value = cfg.messagingSenderId || "";
     document.getElementById("fbAppId").value = cfg.appId || "";
-    modal.hidden = false;
+    if (modal) modal.hidden = false;
   });
 
-  document.getElementById("btnCloseFirebaseModal").addEventListener("click", () => {
-    modal.hidden = true;
+  document.getElementById("btnCloseFirebaseModal")?.addEventListener("click", () => {
+    if (modal) modal.hidden = true;
   });
 
-  document.getElementById("formFirebaseConfig").addEventListener("submit", async (e) => {
+  document.getElementById("formFirebaseConfig")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const newCfg = {
       apiKey: document.getElementById("fbApiKey").value.trim(),
@@ -1686,11 +1688,11 @@ function setupEventListeners() {
     };
     localStorage.setItem(STORAGE_KEYS.FIREBASE_CONFIG, JSON.stringify(newCfg));
     await initFirebaseConnection();
-    modal.hidden = true;
+    if (modal) modal.hidden = true;
     showToast("Configuração do Firebase salva.");
   });
 
-  document.getElementById("btnClearFirebaseConfig").addEventListener("click", () => {
+  document.getElementById("btnClearFirebaseConfig")?.addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEYS.FIREBASE_CONFIG);
     if (firestoreUnsubscribe) firestoreUnsubscribe();
     firebaseConnected = false;
@@ -1698,7 +1700,7 @@ function setupEventListeners() {
     showToast("Desconectado do Firebase (usando armazenamento local).");
   });
 
-  document.getElementById("btnSyncLocalToFirebase").addEventListener("click", async () => {
+  document.getElementById("btnSyncLocalToFirebase")?.addEventListener("click", async () => {
     if (!firebaseConnected || !firestoreDb || !firebaseFunctions) {
       showToast("Conecte o Firebase primeiro antes de sincronizar os registros locais.");
       return;

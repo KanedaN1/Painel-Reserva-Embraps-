@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMBRAPS | Terminal da Reserva — Digite seu RE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="urna-mode-body">
+  <!-- TOP HEADER LIMPO -->
+  <header class="top-header">
+    <div class="header-brand">
+      <div class="logo-container">
+        <img src="./logo.png" alt="EMBRAPS" class="company-logo" />
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-titles">
+        <h1>Terminal de Controle da Reserva</h1>
+        <span class="subtitle">Registro Automático de Entrada e Saída por RE</span>
+      </div>
+    </div>
+
+    <div class="header-status-bar">
+      <div class="live-clock">
+        <span class="clock-date" id="liveDate">--/--/----</span>
+        <strong class="clock-time" id="liveTime">--:--:--</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- TERMINAL ESTILO URNA ELETRÔNICA -->
+  <main class="urna-wrapper">
+    <div class="urna-machine">
+      <!-- LADO ESQUERDO: VISOR DIGITAL -->
+      <div class="urna-screen">
+        <div class="urna-screen-top">
+          <span class="urna-institution">EMBRAPS • RESERVA OPERACIONAL</span>
+          <span class="urna-instruction">DIGITE SEU RE E PRESSIONE <strong>ENTER</strong></span>
+        </div>
+
+        <form id="formUrna" autocomplete="off" class="urna-form">
+          <label for="inputUrnaRe" class="urna-label">DIGITE SEU RE:</label>
+          <input
+            type="text"
+            id="inputUrnaRe"
+            class="urna-re-input"
+            placeholder="_____"
+            inputmode="numeric"
+            autofocus
+            required
+          />
+        </form>
+
+        <!-- PREVIEW DO COLABORADOR AO DIGITAR O RE -->
+        <div class="urna-colab-card" id="urnaColabCard">
+          <div class="urna-Idle-msg">
+            Aguardando digitação da matrícula (RE)...
+          </div>
+        </div>
+
+        <!-- TELA DE CONFIRMAÇÃO (ESTILO FIM / REGISTRADO) -->
+        <div class="urna-confirm-overlay" id="urnaConfirmOverlay" hidden>
+          <div class="urna-confirm-badge" id="urnaConfirmBadge">ENTRADA REGISTRADA</div>
+          <div class="urna-confirm-name" id="urnaConfirmName">—</div>
+          <div class="urna-confirm-role" id="urnaConfirmRole">—</div>
+          <div class="urna-confirm-time" id="urnaConfirmTime">--:--:--</div>
+        </div>
+
+        <div class="urna-screen-footer">
+          <span>Teclado numérico: digite os números do RE e aperte <strong>ENTER (CONFIRMA)</strong></span>
+        </div>
+      </div>
+
+      <!-- LADO DIREITO: TECLADO NUMÉRICO ESTILO URNA -->
+      <div class="urna-keypad-panel">
+        <div class="urna-keypad-header">
+          <strong>TECLADO NUMÉRICO</strong>
+          <span>Use o teclado físico ou toque nos botões</span>
+        </div>
+
+        <div class="urna-numpad">
+          <button type="button" class="urna-key" data-digit="1">1</button>
+          <button type="button" class="urna-key" data-digit="2">2</button>
+          <button type="button" class="urna-key" data-digit="3">3</button>
+          <button type="button" class="urna-key" data-digit="4">4</button>
+          <button type="button" class="urna-key" data-digit="5">5</button>
+          <button type="button" class="urna-key" data-digit="6">6</button>
+          <button type="button" class="urna-key" data-digit="7">7</button>
+          <button type="button" class="urna-key" data-digit="8">8</button>
+          <button type="button" class="urna-key" data-digit="9">9</button>
+          <button type="button" class="urna-key urna-key-zero" data-digit="0">0</button>
+        </div>
+
+        <div class="urna-action-keys">
+          <button type="button" class="urna-action-btn urna-btn-corrige" id="btnUrnaCorrige">
+            CORRIGE / LIMPAR
+          </button>
+          <button type="button" class="urna-action-btn urna-btn-confirma" id="btnUrnaConfirma">
+            CONFIRMA (ENTER)
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./urna.js"></script>
+</body>
+</html>

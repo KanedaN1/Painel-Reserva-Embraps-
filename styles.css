@@ -1359,6 +1359,408 @@ input[readonly] {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* ==========================================================================
+   BOTÕES NO TOPO (MODO PORTEIRO 1 E MODO PORTEIRO 2)
+   ========================================================================== */
+.header-mode-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.btn-header-mode {
+  display: inline-flex;
+  align-items: center;
+  height: 29px;
+  padding: 0 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--blue-primary);
+  background-color: var(--blue-subtle);
+  border: 1px solid var(--blue-border);
+  border-radius: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.btn-header-mode:hover {
+  background-color: var(--blue-primary);
+  color: #FFFFFF;
+}
+
+.btn-header-mode-alt {
+  color: var(--blue-dark);
+  background-color: var(--bg-muted);
+  border-color: var(--border-color);
+}
+
+.btn-header-mode-alt:hover {
+  background-color: var(--blue-dark);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   MODO PORTEIRO 1 (TELA LIMPA E INTUITIVA)
+   ========================================================================== */
+.porteiro-main {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 20px 24px;
+}
+
+.porteiro-top-counters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.porteiro-counter-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.porteiro-counter-chip strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.porteiro-counter-chip.active {
+  background-color: var(--blue-subtle);
+  border-color: var(--blue-primary);
+  color: var(--blue-dark);
+}
+
+/* ==========================================================================
+   MODO PORTEIRO 2 (TERMINAL ESTILO URNA ELETRÔNICA)
+   ========================================================================== */
+.urna-wrapper {
+  min-height: calc(100vh - 68px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.urna-machine {
+  width: 100%;
+  max-width: 980px;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-top: 5px solid var(--blue-primary);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  box-shadow: 0 10px 28px rgba(10, 37, 64, 0.08);
+  overflow: hidden;
+}
+
+.urna-screen {
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 2px solid var(--border-color);
+  position: relative;
+  min-height: 430px;
+  background-color: #FFFFFF;
+}
+
+.urna-screen-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.urna-institution {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--blue-primary);
+  letter-spacing: 0.06em;
+}
+
+.urna-instruction {
+  font-size: 15px;
+  color: var(--blue-dark);
+}
+
+.urna-form {
+  margin: 20px 0 16px;
+}
+
+.urna-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--blue-dark);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.urna-re-input {
+  width: 100%;
+  height: 74px !important;
+  font-size: 38px !important;
+  font-weight: 800 !important;
+  color: var(--blue-dark) !important;
+  text-align: center;
+  letter-spacing: 0.14em;
+  border: 2px solid var(--blue-primary) !important;
+  border-radius: 6px !important;
+  background-color: var(--blue-subtle) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.urna-re-input:focus {
+  box-shadow: 0 0 0 4px rgba(0, 114, 188, 0.2) !important;
+}
+
+.urna-colab-card {
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 18px 20px;
+  min-height: 138px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.urna-Idle-msg {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.urna-colab-card.state-entry {
+  background-color: var(--blue-subtle);
+  border-color: var(--blue-primary);
+  border-left: 5px solid var(--blue-primary);
+}
+
+.urna-colab-card.state-exit {
+  background-color: #E8F5E9;
+  border-color: #2E7D32;
+  border-left: 5px solid #2E7D32;
+}
+
+.urna-action-tag {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+}
+
+.tag-entry {
+  background-color: var(--blue-primary);
+  color: #FFFFFF;
+}
+
+.tag-exit {
+  background-color: #2E7D32;
+  color: #FFFFFF;
+}
+
+.urna-colab-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--blue-dark);
+  margin-top: 2px;
+}
+
+.urna-colab-role {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.urna-colab-meta {
+  font-size: 12.5px;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+/* OVERLAY DE CONFIRMAÇÃO ESTILO URNA */
+.urna-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  text-align: center;
+  z-index: 10;
+}
+
+.urna-confirm-overlay[hidden] {
+  display: none !important;
+}
+
+.urna-confirm-badge {
+  font-size: 15px;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.badge-entrada {
+  background-color: var(--blue-primary);
+  color: #FFFFFF;
+}
+
+.badge-saida {
+  background-color: #2E7D32;
+  color: #FFFFFF;
+}
+
+.urna-confirm-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--blue-dark);
+  margin-bottom: 6px;
+}
+
+.urna-confirm-role {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.urna-confirm-time {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.urna-screen-footer {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* TECLADO NUMÉRICO DIREITO */
+.urna-keypad-panel {
+  background-color: var(--blue-dark);
+  color: #FFFFFF;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.urna-keypad-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.urna-keypad-header strong {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.urna-keypad-header span {
+  font-size: 11px;
+  color: #B6CFE6;
+}
+
+.urna-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.urna-key {
+  height: 56px;
+  background-color: #16375B;
+  color: #FFFFFF;
+  border: 1px solid #2A527D;
+  border-bottom: 3px solid #071627;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.1s, transform 0.06s;
+}
+
+.urna-key:hover {
+  background-color: #1F4976;
+}
+
+.urna-key:active {
+  transform: translateY(1px);
+}
+
+.urna-key-zero {
+  grid-column: 2 / 3;
+}
+
+.urna-action-keys {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 10px;
+}
+
+.urna-action-btn {
+  height: 52px;
+  border: none;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.urna-btn-corrige {
+  background-color: #E65100;
+  color: #FFFFFF;
+}
+
+.urna-btn-corrige:hover {
+  background-color: #CC4700;
+}
+
+.urna-btn-confirma {
+  background-color: #2E7D32;
+  color: #FFFFFF;
+}
+
+.urna-btn-confirma:hover {
+  background-color: #1B5E20;
+}
+
 @media (max-width: 1150px) {
 
   .operation-grid,
@@ -1382,7 +1784,8 @@ input[readonly] {
   }
 
   .entry-main-row,
-  .entry-optional-row {
+  .entry-optional-row,
+  .urna-machine {
     grid-template-columns: 1fr;
   }
 }

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMBRAPS | Reserva Operacional — Modo Porteiro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="porteiro-mode-body">
+  <!-- TOP HEADER LIMPO PARA O PORTEIRO (SEM ACESSO AO ADMIN / INDICADORES / CONFIGS) -->
+  <header class="top-header">
+    <div class="header-brand">
+      <div class="logo-container">
+        <img src="./logo.png" alt="EMBRAPS" class="company-logo" />
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-titles">
+        <h1>Controle de Reserva Operacional</h1>
+        <span class="subtitle">Registro de Entrada e Saída de Colaboradores</span>
+      </div>
+    </div>
+
+    <div class="header-status-bar">
+      <div class="porteiro-top-counters">
+        <div class="porteiro-counter-chip active">
+          <span>Aguardando na Reserva:</span>
+          <strong id="sideCountPresentes">0</strong>
+        </div>
+        <div class="porteiro-counter-chip">
+          <span>Saídas Hoje:</span>
+          <strong id="sideCountSaidas">0</strong>
+        </div>
+        <div class="porteiro-counter-chip">
+          <span>Total Hoje:</span>
+          <strong id="sideCountTotalHoje">0</strong>
+        </div>
+      </div>
+
+      <div class="live-clock">
+        <span class="clock-date" id="liveDate">--/--/----</span>
+        <strong class="clock-time" id="liveTime">--:--:--</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- ÁREA PRINCIPAL EM TELA CHEIA (SEM SIDEBAR DE INDICADORES OU BASE) -->
+  <main class="main-content porteiro-main">
+    <section class="tab-panel active" id="panelOperacao">
+      <!-- PAINÉIS DE REGISTRO DE ENTRADA E SAÍDA -->
+      <div class="operation-grid">
+        <!-- REGISTRO DE ENTRADA -->
+        <div class="op-card op-card-entry">
+          <div class="op-card-header">
+            <div class="op-card-title">
+              <span class="op-badge op-badge-entry">1. ENTRADA</span>
+              <h2>Registrar Chegada do Colaborador</h2>
+            </div>
+            <span class="op-hint">Digite o RE e aperte Enter</span>
+          </div>
+
+          <form id="formEntrada" autocomplete="off">
+            <div class="entry-main-row">
+              <div class="field-group field-re">
+                <label for="inputReEntrada">RE - ENTRADA <span class="req">*</span></label>
+                <input
+                  type="text"
+                  id="inputReEntrada"
+                  placeholder="Digite o RE..."
+                  inputmode="numeric"
+                  autofocus
+                  required
+                />
+              </div>
+
+              <div class="field-group field-nome">
+                <label for="inputNomeEntrada">NOME DO COLABORADOR</label>
+                <input
+                  type="text"
+                  id="inputNomeEntrada"
+                  placeholder="Aparece automaticamente"
+                  readonly
+                />
+              </div>
+
+              <div class="field-group field-funcao">
+                <label for="inputFuncaoEntrada">FUNÇÃO / CARGO</label>
+                <input
+                  type="text"
+                  id="inputFuncaoEntrada"
+                  placeholder="Aparece automaticamente"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="entry-lookup-feedback" id="entryLookupFeedback">
+              Digite o número de matrícula (RE) acima para carregar o nome e a função automaticamente.
+            </div>
+
+            <div class="entry-optional-row">
+              <div class="field-group">
+                <label for="inputTransporteEntrada">TRANSPORTE</label>
+                <select id="inputTransporteEntrada">
+                  <option value="">Selecionar...</option>
+                  <option value="99">99</option>
+                  <option value="99 Supervisor">99 Supervisor</option>
+                  <option value="Veículo Próprio">Veículo Próprio</option>
+                  <option value="Supervisor">Supervisor</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="inputMotivoEntrada">MOTIVO</label>
+                <select id="inputMotivoEntrada">
+                  <option value="">Selecionar...</option>
+                  <option value="Punição">Punição</option>
+                  <option value="Reserva">Reserva</option>
+                  <option value="Atendimento">Atendimento</option>
+                  <option value="Demissão">Demissão</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="inputDiaTrabalhoEntrada">DIA DE TRABALHO?</label>
+                <select id="inputDiaTrabalhoEntrada">
+                  <option value="Sim" selected>Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="inputSupervisorEntrada">SUPERVISOR</label>
+                <input type="text" id="inputSupervisorEntrada" placeholder="Nome do Supervisor" />
+              </div>
+
+              <div class="field-group">
+                <label for="inputPostoEntrada">POSTO</label>
+                <input type="text" id="inputPostoEntrada" placeholder="Posto de destino" />
+              </div>
+
+              <div class="field-group">
+                <label for="inputObsEntrada">OBSERVAÇÃO</label>
+                <input type="text" id="inputObsEntrada" placeholder="Observações" />
+              </div>
+
+              <div class="field-group field-submit">
+                <button type="submit" class="btn-primary" id="btnSubmitEntrada">
+                  Registrar Entrada
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- REGISTRO DE SAÍDA RÁPIDA POR RE -->
+        <div class="op-card op-card-exit">
+          <div class="op-card-header">
+            <div class="op-card-title">
+              <span class="op-badge op-badge-exit">2. SAÍDA</span>
+              <h2>Registrar Saída (RE - SAÍDA)</h2>
+            </div>
+            <span class="op-hint">Quando o colaborador sair</span>
+          </div>
+
+          <form id="formSaidaRapida" autocomplete="off">
+            <div class="field-group">
+              <label for="inputReSaidaRapida">DIGITE O RE DE QUEM ESTÁ SAINDO</label>
+              <div class="exit-input-group">
+                <input
+                  type="text"
+                  id="inputReSaidaRapida"
+                  placeholder="Digite o RE..."
+                  inputmode="numeric"
+                  required
+                />
+                <button type="submit" class="btn-exit-confirm">
+                  Confirmar Saída
+                </button>
+              </div>
+            </div>
+
+            <div class="exit-preview-box" id="exitPreviewBox">
+              <span class="exit-preview-placeholder">
+                Digite o <strong>RE</strong> acima ou clique no botão <strong>Saída</strong> na linha do colaborador na tabela abaixo.
+              </span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- BARRA DE FILTROS SIMPLIFICADA -->
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <div class="filter-item">
+            <label for="filterDate">Data:</label>
+            <input type="date" id="filterDate" />
+            <button type="button" class="btn-link" id="btnShowToday">Hoje</button>
+          </div>
+
+          <div class="filter-item">
+            <label for="filterStatus">Mostrar:</label>
+            <select id="filterStatus">
+              <option value="todos">Todos de Hoje</option>
+              <option value="abertos">Apenas Aguardando na Reserva</option>
+              <option value="concluidos">Apenas Saídas Concluídas</option>
+            </select>
+          </div>
+
+          <div class="filter-item filter-search">
+            <input
+              type="search"
+              id="filterSearchText"
+              placeholder="Buscar colaborador por RE ou Nome..."
+            />
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <span class="records-counter" id="tableRecordsCounter">0 registros</span>
+        </div>
+      </div>
+
+      <!-- TABELA DE CONTROLE DE RESERVA -->
+      <div class="table-wrapper">
+        <table class="reserva-table" id="reservaTable">
+          <thead>
+            <tr>
+              <th class="col-data">DATA</th>
+              <th class="col-re-ent">RE - ENTRADA</th>
+              <th class="col-nome">NOME</th>
+              <th class="col-funcao">FUNÇÃO</th>
+              <th class="col-chegada">CHEGADA</th>
+              <th class="col-saida">SAÍDA</th>
+              <th class="col-re-sai">RE - SAÍDA</th>
+              <th class="col-transporte">TRANSPORTE</th>
+              <th class="col-motivo">MOTIVO</th>
+              <th class="col-dia-trab">DIA DE TRABALHO?</th>
+              <th class="col-sup">SUPERVISOR</th>
+              <th class="col-posto">POSTO</th>
+              <th class="col-obs">OBSERVAÇÃO</th>
+              <th class="col-tempo">TEMPO</th>
+              <th class="col-acoes"></th>
+            </tr>
+          </thead>
+          <tbody id="reservaTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOAST DE NOTIFICAÇÃO OPERACIONAL -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="./painel.js"></script>
+</body>
+</html>
