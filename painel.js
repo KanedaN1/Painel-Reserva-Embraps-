@@ -650,6 +650,7 @@ function renderReservaTable() {
     const transpAtual = reg.transporte || "";
     const motivoAtual = reg.motivo || "";
     const diaTrabAtual = reg.diaTrabalho || "Sim";
+    const lockAttr = isConcluido ? "disabled title='Registro bloqueado após saída da reserva'" : "";
 
     tr.innerHTML = `
       <td class="col-data">${reg.dataDisplay || formatDataCurta(reg.dataIso)}</td>
@@ -660,7 +661,7 @@ function renderReservaTable() {
       <td class="col-saida">${isConcluido ? escapeHtml(reg.saidaHora) : "—"}</td>
       <td class="col-re-sai"></td>
       <td class="col-transporte">
-        <select class="inline-edit-select" data-field="transporte">
+        <select class="inline-edit-select" data-field="transporte" ${lockAttr}>
           <option value="" ${transpAtual === "" ? "selected" : ""}>—</option>
           <option value="99" ${transpAtual === "99" ? "selected" : ""}>99</option>
           <option value="99 Supervisor" ${transpAtual === "99 Supervisor" ? "selected" : ""}>99 Supervisor</option>
@@ -669,7 +670,7 @@ function renderReservaTable() {
         </select>
       </td>
       <td class="col-motivo">
-        <select class="inline-edit-select" data-field="motivo">
+        <select class="inline-edit-select" data-field="motivo" ${lockAttr}>
           <option value="" ${motivoAtual === "" ? "selected" : ""}>—</option>
           <option value="Punição" ${motivoAtual === "Punição" ? "selected" : ""}>Punição</option>
           <option value="Reserva" ${motivoAtual === "Reserva" ? "selected" : ""}>Reserva</option>
@@ -678,19 +679,19 @@ function renderReservaTable() {
         </select>
       </td>
       <td class="col-dia-trab">
-        <select class="inline-edit-select select-dia-trab" data-field="diaTrabalho">
+        <select class="inline-edit-select select-dia-trab" data-field="diaTrabalho" ${lockAttr}>
           <option value="Sim" ${diaTrabAtual === "Sim" ? "selected" : ""}>Sim</option>
           <option value="Não" ${diaTrabAtual === "Não" ? "selected" : ""}>Não</option>
         </select>
       </td>
       <td class="col-sup">
-        <input type="text" class="inline-edit-input" data-field="supervisor" value="${escapeAttr(reg.supervisor || "")}" placeholder="Supervisor..." />
+        <input type="text" class="inline-edit-input" data-field="supervisor" value="${escapeAttr(reg.supervisor || "")}" placeholder="${isConcluido ? "—" : "Supervisor..."}" ${lockAttr} />
       </td>
       <td class="col-posto">
-        <input type="text" class="inline-edit-input" data-field="posto" value="${escapeAttr(reg.posto || "")}" placeholder="Posto..." />
+        <input type="text" class="inline-edit-input" data-field="posto" value="${escapeAttr(reg.posto || "")}" placeholder="${isConcluido ? "—" : "Posto..."}" ${lockAttr} />
       </td>
       <td class="col-obs">
-        <input type="text" class="inline-edit-input" data-field="observacao" value="${escapeAttr(reg.observacao || "")}" placeholder="Observação..." />
+        <input type="text" class="inline-edit-input" data-field="observacao" value="${escapeAttr(reg.observacao || "")}" placeholder="${isConcluido ? "—" : "Observação..."}" ${lockAttr} />
       </td>
       <td class="col-tempo ${tempoClass}" data-live-timer="${isConcluido ? "" : reg.chegadaTs}">
         ${tempoFormatado}
@@ -743,42 +744,44 @@ function renderReservaTable() {
       cellReSaida.appendChild(box);
     }
 
-    // Eventos de edição inline (Supervisor, Posto, Observação)
-    const inlineInputs = tr.querySelectorAll(".inline-edit-input");
-    inlineInputs.forEach((inputEl) => {
-      const saveField = async () => {
-        const field = inputEl.dataset.field;
-        const newVal = field === "observacao" ? inputEl.value.trim() : inputEl.value.trim().toUpperCase();
-        if ((reg[field] || "") !== newVal) {
-          const updated = { ...reg, [field]: newVal };
-          await persistRecord(updated);
-          showToast(`${field.toUpperCase()} atualizado para ${reg.nome}.`);
-        }
-      };
+    // Eventos de edição inline (Supervisor, Posto, Observação, Transporte, Motivo, Dia de Trabalho)
+    // Bloqueados automaticamente após o colaborador registrar a saída da reserva
+    if (!isConcluido) {
+      const inlineInputs = tr.querySelectorAll(".inline-edit-input");
+      inlineInputs.forEach((inputEl) => {
+        const saveField = async () => {
+          const field = inputEl.dataset.field;
+          const newVal = field === "observacao" ? inputEl.value.trim() : inputEl.value.trim().toUpperCase();
+          if ((reg[field] || "") !== newVal) {
+            const updated = { ...reg, [field]: newVal };
+            await persistRecord(updated);
+            showToast(`${field.toUpperCase()} atualizado para ${reg.nome}.`);
+          }
+        };
 
-      inputEl.addEventListener("change", saveField);
-      inputEl.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inputEl.blur();
-        }
+        inputEl.addEventListener("change", saveField);
+        inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            inputEl.blur();
+          }
+        });
       });
-    });
 
-    // Eventos de seleção inline (Transporte, Motivo, Dia de Trabalho)
-    const inlineSelects = tr.querySelectorAll(".inline-edit-select");
-    inlineSelects.forEach((selectEl) => {
-      selectEl.addEventListener("change", async () => {
-        const field = selectEl.dataset.field;
-        const newVal = selectEl.value;
-        const currentVal = field === "diaTrabalho" ? (reg.diaTrabalho || "Sim") : (reg[field] || "");
-        if (currentVal !== newVal) {
-          const updated = { ...reg, [field]: newVal };
-          await persistRecord(updated);
-          showToast(`Campo atualizado para ${reg.nome}.`);
-        }
+      const inlineSelects = tr.querySelectorAll(".inline-edit-select");
+      inlineSelects.forEach((selectEl) => {
+        selectEl.addEventListener("change", async () => {
+          const field = selectEl.dataset.field;
+          const newVal = selectEl.value;
+          const currentVal = field === "diaTrabalho" ? (reg.diaTrabalho || "Sim") : (reg[field] || "");
+          if (currentVal !== newVal) {
+            const updated = { ...reg, [field]: newVal };
+            await persistRecord(updated);
+            showToast(`Campo atualizado para ${reg.nome}.`);
+          }
+        });
       });
-    });
+    }
 
     // Botão excluir
     const btnDel = tr.querySelector(".btn-delete-row");

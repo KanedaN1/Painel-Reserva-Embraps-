@@ -866,6 +866,15 @@ input[readonly] {
   font-weight: 600;
 }
 
+.inline-edit-input:disabled,
+.inline-edit-select:disabled {
+  background-color: #F3F6F9 !important;
+  border-color: #E2E8F0 !important;
+  color: var(--text-secondary) !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
 .analytics-header-flex {
   display: flex;
   align-items: flex-start;
