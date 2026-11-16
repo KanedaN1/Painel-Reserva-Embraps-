@@ -432,10 +432,14 @@ body {
 
 .entry-optional-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr auto;
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   align-items: end;
-  margin-top: 8px;
+  margin-top: 10px;
+}
+
+.entry-optional-row .field-submit {
+  grid-column: span 1;
 }
 
 .field-group {
@@ -841,6 +845,33 @@ input[readonly] {
 .inline-edit-input:focus {
   border-color: var(--blue-primary) !important;
   background-color: #FFFFFF !important;
+}
+
+.inline-edit-select {
+  width: 100%;
+  min-width: 118px;
+  height: 27px !important;
+  padding: 0 6px !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  border: 1px solid var(--border-color) !important;
+  background-color: #FFFFFF !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+}
+
+.inline-edit-select.select-dia-trab {
+  min-width: 78px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.analytics-header-flex {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 /* COLUNA TEMPO (VERDE, AZUL ATIVO, AMARELO >= 30 MIN, VERMELHO >= 60 MIN) */

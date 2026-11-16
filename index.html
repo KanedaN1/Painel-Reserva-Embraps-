@@ -188,18 +188,48 @@
 
               <div class="entry-optional-row">
                 <div class="field-group">
-                  <label for="inputSupervisorEntrada">SUPERVISOR <span class="opt">(editável na tabela)</span></label>
+                  <label for="inputTransporteEntrada">TRANSPORTE</label>
+                  <select id="inputTransporteEntrada">
+                    <option value="">Selecionar...</option>
+                    <option value="99">99</option>
+                    <option value="99 Supervisor">99 Supervisor</option>
+                    <option value="Veículo Próprio">Veículo Próprio</option>
+                    <option value="Supervisor">Supervisor</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="inputMotivoEntrada">MOTIVO</label>
+                  <select id="inputMotivoEntrada">
+                    <option value="">Selecionar...</option>
+                    <option value="Punição">Punição</option>
+                    <option value="Reserva">Reserva</option>
+                    <option value="Atendimento">Atendimento</option>
+                    <option value="Demissão">Demissão</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="inputDiaTrabalhoEntrada">DIA DE TRABALHO?</label>
+                  <select id="inputDiaTrabalhoEntrada">
+                    <option value="Sim" selected>Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="inputSupervisorEntrada">SUPERVISOR <span class="opt">(opcional)</span></label>
                   <input type="text" id="inputSupervisorEntrada" placeholder="Nome do Supervisor" />
                 </div>
 
                 <div class="field-group">
-                  <label for="inputPostoEntrada">POSTO <span class="opt">(editável na tabela)</span></label>
-                  <input type="text" id="inputPostoEntrada" placeholder="Posto de destino / alocação" />
+                  <label for="inputPostoEntrada">POSTO <span class="opt">(opcional)</span></label>
+                  <input type="text" id="inputPostoEntrada" placeholder="Posto de destino" />
                 </div>
 
                 <div class="field-group">
                   <label for="inputObsEntrada">OBSERVAÇÃO <span class="opt">(opcional)</span></label>
-                  <input type="text" id="inputObsEntrada" placeholder="Observações operacionais" />
+                  <input type="text" id="inputObsEntrada" placeholder="Observações" />
                 </div>
 
                 <div class="field-group field-submit">
@@ -295,6 +325,9 @@
                 <th class="col-chegada">CHEGADA</th>
                 <th class="col-saida">SAÍDA</th>
                 <th class="col-re-sai">RE - SAÍDA</th>
+                <th class="col-transporte">TRANSPORTE</th>
+                <th class="col-motivo">MOTIVO</th>
+                <th class="col-dia-trab">DIA DE TRABALHO?</th>
                 <th class="col-sup">SUPERVISOR</th>
                 <th class="col-posto">POSTO</th>
                 <th class="col-obs">OBSERVAÇÃO</th>
@@ -303,7 +336,7 @@
               </tr>
             </thead>
             <tbody id="reservaTableBody">
-              <!-- Preenchido dinamicamente pelo app.js -->
+              <!-- Preenchido dinamicamente pelo painel.js -->
             </tbody>
           </table>
         </div>
@@ -471,6 +504,59 @@
                     </tr>
                   </thead>
                   <tbody id="cargoTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- INDICADOR MENSAL DE TIPO DE TRANSPORTE E MOTIVO -->
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-card-header analytics-header-flex">
+                <div>
+                  <h3>Indicador de Tipo de Transporte Mensal</h3>
+                  <span>Quantidade e percentual por modalidade (99, 99 Supervisor, Veículo Próprio, Supervisor)</span>
+                </div>
+                <div class="filter-item">
+                  <label for="indTransporteMonthSelect">Mês:</label>
+                  <select id="indTransporteMonthSelect"></select>
+                </div>
+              </div>
+              <div class="cargo-bars-container" id="transporteBarsContainer"></div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Tipo de Transporte</th>
+                      <th class="num">Qtd. no Mês</th>
+                      <th class="num">% no Mês</th>
+                      <th class="num">Tempo Médio</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transporteTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <h3>Distribuição por Motivo e Dia de Trabalho</h3>
+                  <span>Classificação operacional (Punição, Reserva, Atendimento, Demissão) e escala</span>
+                </div>
+              </div>
+              <div class="cargo-bars-container" id="motivoBarsContainer"></div>
+              <div class="mini-table-scroll">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Motivo / Dia de Trabalho</th>
+                      <th class="num">Colaboradores</th>
+                      <th class="num">%</th>
+                      <th class="num">Tempo Médio</th>
+                    </tr>
+                  </thead>
+                  <tbody id="motivoTableBody"></tbody>
                 </table>
               </div>
             </div>

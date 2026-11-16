@@ -440,6 +440,9 @@ async function handleRegistrarEntrada(event) {
   const reInputEl = document.getElementById("inputReEntrada");
   const nomeInputEl = document.getElementById("inputNomeEntrada");
   const funcaoInputEl = document.getElementById("inputFuncaoEntrada");
+  const transpInputEl = document.getElementById("inputTransporteEntrada");
+  const motivoInputEl = document.getElementById("inputMotivoEntrada");
+  const diaTrabInputEl = document.getElementById("inputDiaTrabalhoEntrada");
   const supInputEl = document.getElementById("inputSupervisorEntrada");
   const postoInputEl = document.getElementById("inputPostoEntrada");
   const obsInputEl = document.getElementById("inputObsEntrada");
@@ -473,6 +476,9 @@ async function handleRegistrarEntrada(event) {
     saidaTs: null,
     saidaHora: "",
     reSaida: "",
+    transporte: transpInputEl ? transpInputEl.value : "",
+    motivo: motivoInputEl ? motivoInputEl.value : "",
+    diaTrabalho: diaTrabInputEl ? diaTrabInputEl.value || "Sim" : "Sim",
     supervisor: supInputEl.value.trim().toUpperCase(),
     posto: postoInputEl.value.trim().toUpperCase(),
     observacao: obsInputEl.value.trim(),
@@ -481,10 +487,13 @@ async function handleRegistrarEntrada(event) {
 
   await persistRecord(novoRegistro);
 
-  // Limpa campos e devolve foco para o RE de entrada
+  // Limpa campos e devolve foco para o RE de entrada (mantendo Dia de Trabalho = Sim)
   reInputEl.value = "";
   nomeInputEl.value = "";
   funcaoInputEl.value = "";
+  if (transpInputEl) transpInputEl.value = "";
+  if (motivoInputEl) motivoInputEl.value = "";
+  if (diaTrabInputEl) diaTrabInputEl.value = "Sim";
   supInputEl.value = "";
   postoInputEl.value = "";
   obsInputEl.value = "";
@@ -587,7 +596,7 @@ function getFilteredTableRecords() {
       return false;
     }
     if (searchText) {
-      const hay = `${r.reEntrada} ${r.nome} ${r.funcao} ${r.supervisor || ""} ${r.posto || ""} ${r.observacao || ""}`.toLowerCase();
+      const hay = `${r.reEntrada} ${r.nome} ${r.funcao} ${r.transporte || ""} ${r.motivo || ""} ${r.diaTrabalho || ""} ${r.supervisor || ""} ${r.posto || ""} ${r.observacao || ""}`.toLowerCase();
       if (!hay.includes(searchText)) return false;
     }
     return true;
@@ -607,7 +616,7 @@ function renderReservaTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="12" class="empty-table-msg">
+        <td colspan="15" class="empty-table-msg">
           Nenhum registro encontrado para os filtros selecionados. Digite o <strong>RE - ENTRADA</strong> acima para iniciar os lançamentos do dia.
         </td>
       </tr>
@@ -638,6 +647,10 @@ function renderReservaTable() {
             ? "cell-tempo-done"
             : "cell-tempo-active";
 
+    const transpAtual = reg.transporte || "";
+    const motivoAtual = reg.motivo || "";
+    const diaTrabAtual = reg.diaTrabalho || "Sim";
+
     tr.innerHTML = `
       <td class="col-data">${reg.dataDisplay || formatDataCurta(reg.dataIso)}</td>
       <td class="col-re-ent">${escapeHtml(reg.reEntrada)}</td>
@@ -646,6 +659,30 @@ function renderReservaTable() {
       <td class="col-chegada">${escapeHtml(reg.chegadaHora)}</td>
       <td class="col-saida">${isConcluido ? escapeHtml(reg.saidaHora) : "—"}</td>
       <td class="col-re-sai"></td>
+      <td class="col-transporte">
+        <select class="inline-edit-select" data-field="transporte">
+          <option value="" ${transpAtual === "" ? "selected" : ""}>—</option>
+          <option value="99" ${transpAtual === "99" ? "selected" : ""}>99</option>
+          <option value="99 Supervisor" ${transpAtual === "99 Supervisor" ? "selected" : ""}>99 Supervisor</option>
+          <option value="Veículo Próprio" ${transpAtual === "Veículo Próprio" ? "selected" : ""}>Veículo Próprio</option>
+          <option value="Supervisor" ${transpAtual === "Supervisor" ? "selected" : ""}>Supervisor</option>
+        </select>
+      </td>
+      <td class="col-motivo">
+        <select class="inline-edit-select" data-field="motivo">
+          <option value="" ${motivoAtual === "" ? "selected" : ""}>—</option>
+          <option value="Punição" ${motivoAtual === "Punição" ? "selected" : ""}>Punição</option>
+          <option value="Reserva" ${motivoAtual === "Reserva" ? "selected" : ""}>Reserva</option>
+          <option value="Atendimento" ${motivoAtual === "Atendimento" ? "selected" : ""}>Atendimento</option>
+          <option value="Demissão" ${motivoAtual === "Demissão" ? "selected" : ""}>Demissão</option>
+        </select>
+      </td>
+      <td class="col-dia-trab">
+        <select class="inline-edit-select select-dia-trab" data-field="diaTrabalho">
+          <option value="Sim" ${diaTrabAtual === "Sim" ? "selected" : ""}>Sim</option>
+          <option value="Não" ${diaTrabAtual === "Não" ? "selected" : ""}>Não</option>
+        </select>
+      </td>
       <td class="col-sup">
         <input type="text" class="inline-edit-input" data-field="supervisor" value="${escapeAttr(reg.supervisor || "")}" placeholder="Supervisor..." />
       </td>
@@ -724,6 +761,21 @@ function renderReservaTable() {
         if (e.key === "Enter") {
           e.preventDefault();
           inputEl.blur();
+        }
+      });
+    });
+
+    // Eventos de seleção inline (Transporte, Motivo, Dia de Trabalho)
+    const inlineSelects = tr.querySelectorAll(".inline-edit-select");
+    inlineSelects.forEach((selectEl) => {
+      selectEl.addEventListener("change", async () => {
+        const field = selectEl.dataset.field;
+        const newVal = selectEl.value;
+        const currentVal = field === "diaTrabalho" ? (reg.diaTrabalho || "Sim") : (reg[field] || "");
+        if (currentVal !== newVal) {
+          const updated = { ...reg, [field]: newVal };
+          await persistRecord(updated);
+          showToast(`Campo atualizado para ${reg.nome}.`);
         }
       });
     });
@@ -999,9 +1051,234 @@ function renderIndicadores() {
       .join("");
   }
 
+  // Indicador Mensal de Tipo de Transporte e Distribuição por Motivo / Dia de Trabalho
+  populateTransporteMonthOptions();
+  renderTransporteMensalIndicator(nowMs);
+  renderMotivoDiaTrabalhoIndicator(records, nowMs);
+
   // Tabelas Secundárias: Supervisor e Posto
   renderGroupTable(records, "supervisor", "supervisorTableBody", "NÃO INFORMADO", nowMs);
   renderGroupTable(records, "posto", "postoTableBody", "NÃO INFORMADO", nowMs);
+}
+
+function populateTransporteMonthOptions() {
+  const select = document.getElementById("indTransporteMonthSelect");
+  if (!select) return;
+
+  const currentVal = select.value;
+  const nowMonth = getTodayIso().slice(0, 7); // YYYY-MM
+  const monthsSet = new Set([nowMonth]);
+
+  for (const r of registrosReserva) {
+    if (r.dataIso && r.dataIso.length >= 7) {
+      monthsSet.add(r.dataIso.slice(0, 7));
+    }
+  }
+
+  const sortedMonths = Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
+  const monthNames = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  select.innerHTML = "";
+  for (const ym of sortedMonths) {
+    const [year, monthNum] = ym.split("-");
+    const mIdx = parseInt(monthNum, 10) - 1;
+    const label = `${monthNames[mIdx] || monthNum}/${year}`;
+    const opt = document.createElement("option");
+    opt.value = ym;
+    opt.textContent = label;
+    select.appendChild(opt);
+  }
+
+  const optAll = document.createElement("option");
+  optAll.value = "todos";
+  optAll.textContent = "Todos os Meses";
+  select.appendChild(optAll);
+
+  if (currentVal && (sortedMonths.includes(currentVal) || currentVal === "todos")) {
+    select.value = currentVal;
+  } else {
+    select.value = nowMonth;
+  }
+}
+
+function renderTransporteMensalIndicator(nowMs) {
+  const select = document.getElementById("indTransporteMonthSelect");
+  const barsEl = document.getElementById("transporteBarsContainer");
+  const tbody = document.getElementById("transporteTableBody");
+  if (!barsEl || !tbody) return;
+
+  const selectedMonth = select?.value || getTodayIso().slice(0, 7);
+  const cargoVal = document.getElementById("indCargoFilter")?.value || "todos";
+
+  const monthRecords = registrosReserva.filter((r) => {
+    if (selectedMonth !== "todos" && (!r.dataIso || !r.dataIso.startsWith(selectedMonth))) {
+      return false;
+    }
+    if (cargoVal !== "todos" && r.funcao !== cargoVal) {
+      return false;
+    }
+    return true;
+  });
+
+  const fixedCategories = ["99", "99 Supervisor", "Veículo Próprio", "Supervisor"];
+  const map = new Map();
+  for (const cat of fixedCategories) {
+    map.set(cat, { label: cat, count: 0, somaSec: 0 });
+  }
+
+  for (const r of monthRecords) {
+    const key = (r.transporte || "").trim() || "Não informado";
+    if (!map.has(key)) {
+      map.set(key, { label: key, count: 0, somaSec: 0 });
+    }
+    const item = map.get(key);
+    item.count++;
+    item.somaSec += getRecordDurationSec(r, nowMs);
+  }
+
+  const total = monthRecords.length;
+  const list = Array.from(map.values()).sort((a, b) => b.count - a.count);
+
+  if (total === 0) {
+    barsEl.innerHTML = `<div style="margin:auto;color:var(--text-muted);font-size:12px;">Nenhum registro no mês selecionado.</div>`;
+  } else {
+    barsEl.innerHTML = list
+      .map((item) => {
+        const pct = total > 0 ? ((item.count / total) * 100).toFixed(1) : "0.0";
+        return `
+          <div class="cargo-bar-item">
+            <div class="cargo-bar-top">
+              <span>${escapeHtml(item.label)}</span>
+              <span>${item.count} (${pct.replace(".", ",")}%)</span>
+            </div>
+            <div class="cargo-bar-track">
+              <div class="cargo-bar-fill" style="width: ${item.count > 0 ? Math.max(3, parseFloat(pct)) : 0}%;"></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  tbody.innerHTML = list
+    .map((item) => {
+      const pct = total > 0 ? ((item.count / total) * 100).toFixed(1).replace(".", ",") : "0,0";
+      const avg = item.count > 0 ? Math.floor(item.somaSec / item.count) : 0;
+      return `
+        <tr>
+          <td><strong>${escapeHtml(item.label)}</strong></td>
+          <td class="num"><strong>${item.count}</strong></td>
+          <td class="num">${pct}%</td>
+          <td class="num">${formatDurationHMS(avg)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function renderMotivoDiaTrabalhoIndicator(records, nowMs) {
+  const barsEl = document.getElementById("motivoBarsContainer");
+  const tbody = document.getElementById("motivoTableBody");
+  if (!barsEl || !tbody) return;
+
+  const motivosFixed = ["Reserva", "Atendimento", "Punição", "Demissão"];
+  const map = new Map();
+  for (const m of motivosFixed) {
+    map.set(m, { label: `Motivo: ${m}`, count: 0, somaSec: 0 });
+  }
+
+  let diaSim = 0;
+  let diaNao = 0;
+  let somaSim = 0;
+  let somaNao = 0;
+
+  for (const r of records) {
+    const mKey = (r.motivo || "").trim();
+    const dSec = getRecordDurationSec(r, nowMs);
+    if (mKey) {
+      if (!map.has(mKey)) {
+        map.set(mKey, { label: `Motivo: ${mKey}`, count: 0, somaSec: 0 });
+      }
+      const mItem = map.get(mKey);
+      mItem.count++;
+      mItem.somaSec += dSec;
+    } else {
+      if (!map.has("Não informado")) {
+        map.set("Não informado", { label: "Motivo: Não informado", count: 0, somaSec: 0 });
+      }
+      const mItem = map.get("Não informado");
+      mItem.count++;
+      mItem.somaSec += dSec;
+    }
+
+    const dt = (r.diaTrabalho || "Sim") === "Não" ? "Não" : "Sim";
+    if (dt === "Sim") {
+      diaSim++;
+      somaSim += dSec;
+    } else {
+      diaNao++;
+      somaNao += dSec;
+    }
+  }
+
+  const total = records.length;
+  const list = Array.from(map.values()).sort((a, b) => b.count - a.count);
+
+  if (total === 0) {
+    barsEl.innerHTML = `<div style="margin:auto;color:var(--text-muted);font-size:12px;">Sem dados no período selecionado.</div>`;
+  } else {
+    barsEl.innerHTML = list
+      .map((item) => {
+        const pct = total > 0 ? ((item.count / total) * 100).toFixed(1) : "0.0";
+        return `
+          <div class="cargo-bar-item">
+            <div class="cargo-bar-top">
+              <span>${escapeHtml(item.label.replace("Motivo: ", ""))}</span>
+              <span>${item.count} (${pct.replace(".", ",")}%)</span>
+            </div>
+            <div class="cargo-bar-track">
+              <div class="cargo-bar-fill" style="width: ${item.count > 0 ? Math.max(3, parseFloat(pct)) : 0}%;"></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  const rowsHtml = list.map((item) => {
+    const pct = total > 0 ? ((item.count / total) * 100).toFixed(1).replace(".", ",") : "0,0";
+    const avg = item.count > 0 ? Math.floor(item.somaSec / item.count) : 0;
+    return `
+      <tr>
+        <td><strong>${escapeHtml(item.label)}</strong></td>
+        <td class="num"><strong>${item.count}</strong></td>
+        <td class="num">${pct}%</td>
+        <td class="num">${formatDurationHMS(avg)}</td>
+      </tr>
+    `;
+  });
+
+  const pctSim = total > 0 ? ((diaSim / total) * 100).toFixed(1).replace(".", ",") : "0,0";
+  const pctNao = total > 0 ? ((diaNao / total) * 100).toFixed(1).replace(".", ",") : "0,0";
+  rowsHtml.push(`
+    <tr style="background-color: var(--bg-muted);">
+      <td><strong>Dia de Trabalho: Sim</strong></td>
+      <td class="num"><strong>${diaSim}</strong></td>
+      <td class="num">${pctSim}%</td>
+      <td class="num">${formatDurationHMS(diaSim > 0 ? Math.floor(somaSim / diaSim) : 0)}</td>
+    </tr>
+    <tr style="background-color: var(--bg-muted);">
+      <td><strong>Dia de Trabalho: Não</strong></td>
+      <td class="num"><strong>${diaNao}</strong></td>
+      <td class="num">${pctNao}%</td>
+      <td class="num">${formatDurationHMS(diaNao > 0 ? Math.floor(somaNao / diaNao) : 0)}</td>
+    </tr>
+  `);
+
+  tbody.innerHTML = rowsHtml.join("");
 }
 
 function renderGroupTable(records, fieldName, tbodyId, emptyLabel, nowMs) {
@@ -1132,6 +1409,9 @@ function handleExportTableCsv() {
     "CHEGADA",
     "SAÍDA",
     "RE - SAIDA",
+    "TRANSPORTE",
+    "MOTIVO",
+    "DIA DE TRABALHO?",
     "SUPERVISOR",
     "POSTO",
     "OBSERVAÇÃO",
@@ -1147,6 +1427,9 @@ function handleExportTableCsv() {
     r.chegadaHora,
     r.saidaHora || "",
     r.reSaida || "",
+    r.transporte || "",
+    r.motivo || "",
+    r.diaTrabalho || "Sim",
     r.supervisor || "",
     r.posto || "",
     r.observacao || "",
@@ -1172,6 +1455,9 @@ function handleExportIndicadoresCsv() {
     "CHEGADA",
     "SAÍDA",
     "RE - SAIDA",
+    "TRANSPORTE",
+    "MOTIVO",
+    "DIA DE TRABALHO?",
     "SUPERVISOR",
     "POSTO",
     "OBSERVAÇÃO",
@@ -1190,6 +1476,9 @@ function handleExportIndicadoresCsv() {
       r.chegadaHora,
       r.saidaHora || "EM ABERTO",
       r.reSaida || "",
+      r.transporte || "",
+      r.motivo || "",
+      r.diaTrabalho || "Sim",
       r.supervisor || "",
       r.posto || "",
       r.observacao || "",
@@ -1363,6 +1652,9 @@ function setupEventListeners() {
   document.getElementById("indDateStart").addEventListener("change", renderIndicadores);
   document.getElementById("indDateEnd").addEventListener("change", renderIndicadores);
   document.getElementById("indCargoFilter").addEventListener("change", renderIndicadores);
+  document.getElementById("indTransporteMonthSelect")?.addEventListener("change", () => {
+    renderTransporteMensalIndicator(Date.now());
+  });
   document.getElementById("btnExportIndicadoresCsv").addEventListener("click", handleExportIndicadoresCsv);
 
   // Modal Firebase
